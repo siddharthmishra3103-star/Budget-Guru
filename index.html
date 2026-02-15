@@ -13,215 +13,219 @@
             --primary: #818cf8; --income: #10b981; --expense: #f43f5e; --invest: #3b82f6; --save: #fbbf24;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; }
-        .wrapper { display: flex; width: 400vw; height: 100vh; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .wrapper { display: flex; width: 500vw; height: 100vh; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .page { width: 100vw; height: 100vh; padding: 110px 20px 20px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 24px; padding: 20px; width: 100%; max-width: 400px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         
-        /* Desktop/Top Navigation Tabs */
-        .nav-tabs { position: fixed; top: 0; width: 100%; background: rgba(15, 23, 42, 0.95); z-index: 100; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-around; backdrop-filter: blur(10px); }
-        .nav-tab-btn { background: none; border: none; color: rgba(255,255,255,0.5); font-weight: 600; cursor: pointer; transition: 0.3s; border-radius: 10px; font-size: 0.85rem; padding: 8px 12px; }
+        .nav-tabs { position: fixed; top: 0; width: 100%; background: rgba(15, 23, 42, 0.95); z-index: 100; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-around; }
+        .nav-tab-btn { background: none; border: none; color: rgba(255,255,255,0.5); font-weight: 600; cursor: pointer; transition: 0.3s; border-radius: 10px; font-size: 0.75rem; padding: 8px 5px; }
         .nav-tab-btn.active { color: var(--primary); background: rgba(129, 140, 248, 0.15); }
 
-        /* AI Floating Icon */
-        .ai-bot-icon { position: fixed; bottom: 80px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), #4f46e5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 100; box-shadow: 0 0 15px var(--primary); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .add-goal-btn { position: fixed; top: 15px; right: 15px; z-index: 110; background: var(--save); color: #000; border: none; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px var(--save); }
+
+        .ai-bot-icon { position: fixed; bottom: 80px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), #4f46e5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 100; box-shadow: 0 0 15px var(--primary); }
         
-        #ai-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 350px; z-index: 200; }
-        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; transition: 0.2s; }
+        #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; backdrop-filter: blur(5px); }
+        .custom-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 350px; }
+        
+        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; }
         input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; }
-        .slider { width: 100%; margin: 10px 0; accent-color: var(--primary); cursor: pointer; }
-        .chart-box { height: 180px; margin-top: 10px; }
+        .slider { width: 100%; margin: 10px 0; accent-color: var(--primary); }
+        .progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--save); transition: 0.5s; }
     </style>
 </head>
 <body>
 
     <div class="nav-tabs">
         <button class="nav-tab-btn active" onclick="slide(0)">Income</button>
-        <button class="nav-tab-btn" onclick="slide(1)">Expenses</button>
+        <button class="nav-tab-btn" onclick="slide(1)">Expense</button>
         <button class="nav-tab-btn" onclick="slide(2)">Invest</button>
-        <button class="nav-tab-btn" onclick="slide(3)">Reports</button>
+        <button class="nav-tab-btn" onclick="slide(3)">Savings</button>
+        <button class="nav-tab-btn" onclick="slide(4)">Report</button>
     </div>
 
-    <div class="ai-bot-icon" onclick="toggleAI()">🤖</div>
+    <button class="add-goal-btn" onclick="toggleModal('goal-modal')">+</button>
+    <div class="ai-bot-icon" onclick="toggleModal('ai-modal')">🤖</div>
 
-    <div id="ai-modal" class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><b>Bhai AI Advisor</b> <span onclick="toggleAI()" style="cursor:pointer">✕</span></div>
-        <div id="chat-win" style="height:150px; overflow-y:auto; font-size:0.85rem; margin:10px 0; border-bottom:1px solid var(--border); padding:5px;">
-            <p style="color:var(--save)">Bhai: Lucknow ke Nawab jaisa kharcha aur CA jaisi savings, dono manage karenge!</p>
+    <div id="modal-overlay" onclick="closeAllModals()">
+        <div id="ai-modal" class="custom-modal glass-card" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between;"><b>Bhai AI Advisor</b> <span onclick="closeAllModals()" style="cursor:pointer">✕</span></div>
+            <div id="chat-win" style="height:150px; overflow-y:auto; font-size:0.8rem; border-bottom:1px solid var(--border); margin:10px 0;"></div>
+            <input type="text" id="chat-in" placeholder="Car kab lu?">
+            <button class="btn" style="background:var(--primary)" onclick="askAI()">Pucho</button>
         </div>
-        <input type="text" id="chat-in" placeholder="Sawaal pucho (e.g. Car kab lu?)...">
-        <button class="btn" style="background:var(--primary)" onclick="askAI()">Puchho</button>
+
+        <div id="goal-modal" class="custom-modal glass-card" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between;"><b>Naya Goal Set Karo</b> <span onclick="closeAllModals()" style="cursor:pointer">✕</span></div>
+            <input type="text" id="goal-name" placeholder="Kya chahiye? (e.g. iPhone 17)">
+            <input type="number" id="goal-total" placeholder="Total Price (₹)">
+            <input type="number" id="goal-saved" placeholder="Pehle se kitna hai? (₹)">
+            <button class="btn" style="background:var(--save); color:#000;" onclick="setGoal()">Save Goal</button>
+        </div>
     </div>
 
     <div class="wrapper" id="main-wrapper">
         <div class="page">
             <div class="glass-card" style="border-top: 4px solid var(--income);">
                 <h3>Total Income 💰</h3>
-                <h1 id="disp-inc" style="color:var(--income)">₹0</h1>
+                <h1 id="disp-inc">₹0</h1>
                 <input type="number" id="inc-amt" placeholder="Amount (₹)">
-                <input type="text" id="inc-desc" placeholder="Details (Salary, Freelance)">
-                <button class="btn" style="background:var(--income)" onclick="updateData('income')">Add Income</button>
-            </div>
-            <div class="glass-card">
-                <h4>50/30/20 Budget Rule</h4>
-                <div style="font-size:0.8rem; display:flex; justify-content:space-between;">
-                    <span>Needs: <b id="s-needs">₹0</b></span>
-                    <span>Wants: <b id="s-wants">₹0</b></span>
-                    <span>Invest: <b id="s-invest">₹0</b></span>
-                </div>
+                <input type="text" id="inc-desc" placeholder="Details">
+                <button class="btn" style="background:var(--income)" onclick="addData('inc')">Add Income</button>
             </div>
         </div>
 
         <div class="page">
             <div class="glass-card" style="border-top: 4px solid var(--expense);">
-                <h3>Total Expenses 💸</h3>
-                <h1 id="disp-exp" style="color:var(--expense)">₹0</h1>
+                <h3>Expenses 💸</h3>
+                <h1 id="disp-exp">₹0</h1>
                 <input type="number" id="exp-amt" placeholder="Amount (₹)">
-                <button class="btn" style="background:var(--expense)" onclick="updateData('expense')">Add Expense</button>
-            </div>
-            <div class="glass-card">
-                <h4>Expense Breakdown</h4>
-                <div class="chart-box"><canvas id="pieChart"></canvas></div>
-                <h4 style="margin-top:20px;">Monthly Trends</h4>
-                <div class="chart-box"><canvas id="barChart"></canvas></div>
+                <button class="btn" style="background:var(--expense)" onclick="addData('exp')">Add Expense</button>
+                <div style="height:150px; margin-top:20px;"><canvas id="pieChart"></canvas></div>
             </div>
         </div>
 
         <div class="page">
             <div class="glass-card" style="border-top: 4px solid var(--invest);">
-                <h3>Investments 📈</h3>
-                <h1 id="disp-inv" style="color:var(--invest)">₹0</h1>
-                <p>Millionaire Clock: <b id="m-clock" style="color:var(--save)">-- Years</b></p>
-                <hr style="border:0.1px solid var(--border); margin:15px 0;">
+                <h3>Manual Investment 📉</h3>
+                <h1 id="disp-inv">₹0</h1>
+                <input type="number" id="inv-amt" placeholder="Investment Amount (₹)">
+                <input type="text" id="inv-desc" placeholder="Kahan dala? (Mutual Fund, Crypto)">
+                <button class="btn" style="background:var(--invest)" onclick="addData('inv')">Add Investment</button>
+            </div>
+            <div class="glass-card">
                 <h4>SIP Time Machine 🚀</h4>
-                <p style="font-size:0.75rem; margin:0;">Monthly SIP: <b>₹<span id="sip-label">2000</span></b></p>
-                <input type="range" min="500" max="100000" step="500" value="2000" class="slider" id="sip-range" oninput="runSIP()">
-                
-                <p style="font-size:0.75rem; margin:10px 0 0;">Return Rate: <b><span id="roi-label">12</span>%</b></p>
-                <input type="range" min="5" max="30" step="1" value="12" class="slider" id="roi-range" oninput="runSIP()">
-                
-                <p style="font-size:0.75rem; margin:10px 0 0;">Time (Years): <b><span id="year-label">10</span></b></p>
-                <input type="range" min="1" max="30" step="1" value="10" class="slider" id="year-range" oninput="runSIP()">
-
-                <div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:12px; margin-top:10px; text-align:center;">
-                    <small>Expected Returns</small>
-                    <div style="font-size:1.4rem; font-weight:bold; color:var(--success)">₹<span id="sip-res">0</span></div>
-                </div>
+                <p style="font-size:0.7rem;">Time: <b id="yr-label">10</b> Years | ROI: <b id="roi-label">12</b>%</p>
+                <input type="range" min="1" max="30" value="10" class="slider" id="yr-range" oninput="calcSIP()">
+                <input type="range" min="5" max="30" value="12" class="slider" id="roi-range" oninput="calcSIP()">
+                <div style="color:var(--income); font-weight:bold;">FV: ₹<span id="sip-res">0</span></div>
             </div>
         </div>
 
         <div class="page">
             <div class="glass-card" style="border-top: 4px solid var(--save);">
-                <h3>Survival Runway ✈️</h3>
-                <h1 id="runway-val" style="color:var(--save); text-align:center; font-size:3rem;">0 Days</h1>
-                <p style="font-size:0.8rem; text-align:center; opacity:0.7;">Kitne din survive karoge bina naukri ke?</p>
+                <h3>Manual Savings 🛡️</h3>
+                <h1 id="disp-save">₹0</h1>
+                <input type="number" id="msave-amt" placeholder="Kitna bacha liya? (₹)">
+                <button class="btn" style="background:var(--save); color:#000;" onclick="addData('msave')">Add to Savings</button>
             </div>
-            <button class="btn" style="background:#6366f1" onclick="downloadPDF()">📄 Download PDF Statement</button>
-            <button class="btn" style="background:var(--primary)" onclick="runAudit()">📊 Monthly Quick Audit</button>
+            <div id="goal-list" style="width:100%; max-width:400px;"></div>
+        </div>
+
+        <div class="page">
+            <div class="glass-card">
+                <h3>Survival Runway ✈️</h3>
+                <h1 id="runway-val" style="color:var(--save)">0 Days</h1>
+            </div>
+            <button class="btn" style="background:#6366f1" onclick="downloadPDF()">📄 Download P&L PDF</button>
+            <div style="height:150px; width:100%;"><canvas id="barChart"></canvas></div>
         </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('bg_guru_pro_final')) || { inc: 0, exp: 0, inv: 0, monthly: 0 };
-        let currentP = 0;
-        let pie = null, bar = null;
-
-        // Navigation Logic
-        let startX = 0;
-        document.addEventListener('touchstart', e => startX = e.touches[0].clientX);
-        document.addEventListener('touchend', e => {
-            let endX = e.changedTouches[0].clientX;
-            if (startX - endX > 50 && currentP < 3) slide(currentP + 1);
-            if (startX - endX < -50 && currentP > 0) slide(currentP - 1);
-        });
+        let db = JSON.parse(localStorage.getItem('bg_v_final_final')) || { inc:0, exp:0, inv:0, msave:0, goal:null };
+        let currentP = 0, pie=null, bar=null;
 
         function slide(p) {
             currentP = p;
             document.getElementById('main-wrapper').style.transform = `translateX(-${p * 100}vw)`;
-            document.querySelectorAll('.nav-tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === p));
-            if(p === 1) renderCharts();
+            document.querySelectorAll('.nav-tab-btn').forEach((b,i) => b.classList.toggle('active', i===p));
+            if(p===1 || p===4) renderCharts();
         }
 
-        function updateData(type) {
-            let val = parseInt(document.getElementById(type.substring(0,3)+'-amt').value);
+        function toggleModal(id) {
+            document.getElementById('modal-overlay').style.display = 'block';
+            document.getElementById('ai-modal').style.display = 'none';
+            document.getElementById('goal-modal').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function closeAllModals() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        function addData(type) {
+            let val = parseInt(document.getElementById(type+'-amt')?.value || document.getElementById('msave-amt')?.value);
             if(!val) return;
-            if(type === 'income') { db.inc += val; db.monthly = val; }
-            else if(type === 'expense') db.exp += val;
-            else if(type === 'invest') db.inv += val;
-            localStorage.setItem('bg_guru_pro_final', JSON.stringify(db));
+            db[type] += val;
+            localStorage.setItem('bg_v_final_final', JSON.stringify(db));
             renderAll();
-            document.getElementById(type.substring(0,3)+'-amt').value = '';
+            document.querySelectorAll('input').forEach(i => i.value='');
         }
 
-        function renderCharts() {
-            const colors = ['#f43f5e', '#3b82f6', '#10b981'];
-            // Pie
-            const pCtx = document.getElementById('pieChart').getContext('2d');
-            if(pie) pie.destroy();
-            pie = new Chart(pCtx, {
-                type: 'doughnut',
-                data: { labels: ['Expense', 'Invest', 'Save'], datasets: [{ data: [db.exp, db.inv, Math.max(0, db.inc-db.exp-db.inv)], backgroundColor: colors, borderWidth: 0 }] },
-                options: { cutout: '75%', plugins: { legend: { position: 'bottom', labels: {color: '#fff', font: {size: 10}} } } }
-            });
-            // Bar
-            const bCtx = document.getElementById('barChart').getContext('2d');
-            if(bar) bar.destroy();
-            bar = new Chart(bCtx, {
-                type: 'bar',
-                data: { labels: ['Inc', 'Exp', 'Inv'], datasets: [{ data: [db.inc, db.exp, db.inv], backgroundColor: ['#10b981', '#f43f5e', '#3b82f6'] }] },
-                options: { scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: {color: '#fff'} }, x: { ticks: {color: '#fff'} } }, plugins: { legend: { display: false } } }
-            });
+        function setGoal() {
+            db.goal = {
+                name: document.getElementById('goal-name').value,
+                total: parseInt(document.getElementById('goal-total').value),
+                saved: parseInt(document.getElementById('goal-saved').value)
+            };
+            localStorage.setItem('bg_v_final_final', JSON.stringify(db));
+            renderAll();
+            closeAllModals();
         }
 
         function renderAll() {
             document.getElementById('disp-inc').innerText = `₹${db.inc.toLocaleString()}`;
             document.getElementById('disp-exp').innerText = `₹${db.exp.toLocaleString()}`;
             document.getElementById('disp-inv').innerText = `₹${db.inv.toLocaleString()}`;
-            let m = db.monthly || 1;
-            document.getElementById('s-needs').innerText = `₹${(m*0.5).toLocaleString()}`;
-            document.getElementById('s-wants').innerText = `₹${(m*0.3).toLocaleString()}`;
-            document.getElementById('s-invest').innerText = `₹${(m*0.2).toLocaleString()}`;
-            let y = ((1000000 - db.inv)/(m*0.2*12 || 1)).toFixed(1);
-            document.getElementById('m-clock').innerText = `${y > 0 ? y : 0} Years`;
-            let run = Math.floor((db.inc - db.exp - db.inv) / (db.exp/30 || 1));
-            document.getElementById('runway-val').innerText = (run > 0 ? run : 0) + " Days";
-            runSIP();
-            if(currentP === 1) renderCharts();
+            document.getElementById('disp-save').innerText = `₹${db.msave.toLocaleString()}`;
+            
+            if(db.goal) {
+                let perc = Math.min(100, (db.msave / db.goal.total) * 100).toFixed(1);
+                document.getElementById('goal-list').innerHTML = `
+                    <div class="glass-card">
+                        <h4>Target: ${db.goal.name}</h4>
+                        <p>₹${db.msave.toLocaleString()} / ₹${db.goal.total.toLocaleString()}</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${perc}%"></div></div>
+                        <p style="font-size:0.7rem; margin-top:5px;">${perc}% Complete</p>
+                    </div>
+                `;
+            }
+
+            let run = Math.floor(db.msave / (db.exp/30 || 1));
+            document.getElementById('runway-val').innerText = `${run > 0 ? run : 0} Days`;
+            calcSIP();
         }
 
-        function runSIP() {
-            let sip = parseInt(document.getElementById('sip-range').value);
-            let roi = parseInt(document.getElementById('roi-range').value);
-            let yrs = parseInt(document.getElementById('year-range').value);
-            document.getElementById('sip-label').innerText = sip.toLocaleString();
+        function calcSIP() {
+            let yrs = document.getElementById('yr-range').value;
+            let roi = document.getElementById('roi-range').value;
+            document.getElementById('yr-label').innerText = yrs;
             document.getElementById('roi-label').innerText = roi;
-            document.getElementById('year-label').innerText = yrs;
-            let i = (roi/100)/12, n = yrs*12;
+            let i = (roi/100)/12, n = yrs*12, sip = 2000;
             let fv = sip * ((Math.pow(1+i, n)-1)/i) * (1+i);
             document.getElementById('sip-res').innerText = Math.round(fv).toLocaleString();
         }
 
-        function toggleAI() { let m = document.getElementById('ai-modal'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+        function renderCharts() {
+            const colors = ['#f43f5e', '#3b82f6', '#10b981'];
+            if(pie) pie.destroy();
+            pie = new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut', data: { labels:['Exp','Inv','Save'], datasets:[{data:[db.exp, db.inv, db.msave], backgroundColor:colors, borderWidth:0}]},
+                options: { cutout:'70%', plugins:{legend:{position:'bottom', labels:{color:'#fff'}}}}
+            });
+            if(bar) bar.destroy();
+            bar = new Chart(document.getElementById('barChart'), {
+                type: 'bar', data: { labels:['Inc','Exp','Inv'], datasets:[{label:'Amount', data:[db.inc, db.exp, db.inv], backgroundColor:colors}]},
+                options: { scales:{y:{grid:{color:'rgba(255,255,255,0.1)'}, ticks:{color:'#fff'}}, x:{ticks:{color:'#fff'}}}, plugins:{legend:{display:false}}}
+            });
+        }
 
         function askAI() {
             let q = document.getElementById('chat-in').value.toLowerCase();
-            let w = document.getElementById('chat-win');
-            let res = "Bhai, savings badhao!";
-            if(q.includes('car')) res = db.inc < 45000 ? "Lucknow mein auto se chalo bhai, car abhi risk hai!" : "Good, 1.5 saal mein car aa jayegi!";
-            else if(q.includes('party')) res = db.exp > db.inc*0.6 ? "Abbe kahan party? Pehle hi kharcha cross kar gaye ho!" : "Chalo theek hai, thodi party toh banti hai.";
-            w.innerHTML += `<p><b>Aap:</b> ${q}</p><p style="color:var(--save)"><b>Bhai:</b> ${res}</p>`;
-            w.scrollTop = w.scrollHeight; document.getElementById('chat-in').value = '';
+            let res = "Bhai, savings par dhyan do!";
+            if(db.goal && q.includes('car')) res = `Bhai tera ${db.goal.name} ka goal abhi ${((db.msave/db.goal.total)*100).toFixed(0)}% hi hua hai, faltu kharche mtt kar!`;
+            document.getElementById('chat-win').innerHTML += `<p><b>Aap:</b> ${q}</p><p style="color:var(--save)"><b>Bhai:</b> ${res}</p>`;
+            document.getElementById('chat-in').value = '';
         }
 
         function downloadPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.setFontSize(20); doc.text("BUDGET GURU - P&L STATEMENT", 20, 20);
-            doc.setFontSize(12); doc.text(`Income: Rs. ${db.inc} | Expense: Rs. ${db.exp} | Invested: Rs. ${db.inv}`, 20, 40);
-            doc.text(`Balance: Rs. ${db.inc - db.exp - db.inv}`, 20, 50);
-            doc.save("Budget_Guru_Pro_Report.pdf");
+            doc.text("BUDGET GURU - FINAL AUDIT", 20, 20);
+            doc.text(`Total Income: Rs. ${db.inc}`, 20, 40);
+            doc.text(`Total Savings: Rs. ${db.msave}`, 20, 50);
+            if(db.goal) doc.text(`Goal (${db.goal.name}): ${((db.msave/db.goal.total)*100).toFixed(1)}% Completed`, 20, 70);
+            doc.save("Budget_Guru_Audit.pdf");
         }
-
-        function runAudit() { alert(`Audit Status:\nSavings: ${(((db.inc-db.exp)/db.inc)*100).toFixed(1)}%\nVerdict: ${db.exp > db.inc * 0.65 ? "Warning: Overspending!" : "Great Job, Nawab Sahab!"}`); }
 
         renderAll();
     </script>
