@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Budget Guru 🧘‍♂️</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a; --glass: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.1); --text: #f8fafc;
+            --primary: #818cf8; --income: #10b981; --expense: #f43f5e; --invest: #3b82f6; --save: #fbbf24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+            margin: 0; padding: 0; overflow: hidden;
+        }
+
+        /* Horizontal Swiper */
+        .wrapper { display: flex; width: 400vw; height: 100vh; transition: transform 0.4s ease-out; }
+        .page { width: 100vw; height: 100vh; padding: 60px 20px 20px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(15px);
+            border: 1px solid var(--border); border-radius: 24px;
+            padding: 20px; width: 100%; max-width: 400px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        /* Navigation */
+        .nav-header { position: fixed; top: 0; width: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); z-index: 100; padding: 15px; text-align: center; border-bottom: 1px solid var(--border); }
+        .nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
+        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.2); border-radius: 50%; transition: 0.3s; }
+        .dot.active { background: var(--primary); width: 20px; border-radius: 10px; }
+
+        /* Floating AI Bot */
+        .ai-bot-icon { position: fixed; bottom: 80px; right: 20px; width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 25px; cursor: pointer; z-index: 100; box-shadow: 0 0 15px var(--primary); }
+        #ai-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 350px; z-index: 200; }
+
+        /* Form Elements */
+        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; transition: 0.2s; }
+        input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; }
+        
+        .chart-box { height: 200px; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .survival-tag { font-size: 2rem; font-weight: 900; color: var(--save); text-align: center; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-header">
+        <h2 style="margin:0; color:var(--primary);">Budget Guru 🧘‍♂️</h2>
+    </div>
+
+    <div class="ai-bot-icon" onclick="toggleAI()">🤖</div>
+
+    <div id="ai-modal" class="glass-card">
+        <div style="display:flex; justify-content:space-between;"><b>Bhai AI Advisor</b> <span onclick="toggleAI()" style="cursor:pointer">✕</span></div>
+        <div id="chat-window" style="height:150px; overflow-y:auto; font-size:0.8rem; margin:10px 0; border-bottom:1px solid var(--border);">Bhai: Car leni hai? Sip badha lo!</div>
+        <input type="text" id="chat-input" placeholder="Pucho...">
+        <button class="btn" style="background:var(--primary)" onclick="askAI()">Puchho</button>
+    </div>
+
+    <div class="wrapper" id="main-wrapper">
+        <div class="page" id="p1">
+            <div class="glass-card" style="border-top: 4px solid var(--income);">
+                <h3>Total Income 💰</h3>
+                <h1 id="disp-inc" style="color:var(--income)">₹0</h1>
+                <input type="number" id="inc-amt" placeholder="Amount (₹)">
+                <input type="text" id="inc-desc" placeholder="Details (Salary, Freelance)">
+                <button class="btn" style="background:var(--income)" onclick="add('income')">Add Income</button>
+            </div>
+            <div class="glass-card">
+                <h4>Income Split (50/30/20)</h4>
+                <p style="font-size:0.8rem">Needs: <b id="s-needs">₹0</b> | Wants: <b id="s-wants">₹0</b> | Invest: <b id="s-invest">₹0</b></p>
+            </div>
+        </div>
+
+        <div class="page" id="p2">
+            <div class="glass-card" style="border-top: 4px solid var(--expense);">
+                <h3>Expenses 💸</h3>
+                <h1 id="disp-exp" style="color:var(--expense)">₹0</h1>
+                <input type="number" id="exp-amt" placeholder="Amount (₹)">
+                <button class="btn" style="background:var(--expense)" onclick="add('expense')">Quick Expense</button>
+                <div class="chart-box"><canvas id="expenseChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="page" id="p3">
+            <div class="glass-card" style="border-top: 4px solid var(--invest);">
+                <h3>Investments 📈</h3>
+                <h1 id="disp-inv" style="color:var(--invest)">₹0</h1>
+                <p>Millionaire Clock: <b id="m-clock" style="color:var(--save)">-- Years</b></p>
+                <hr style="border:0.1px solid var(--border)">
+                <h4>Time Machine (12% CAGR)</h4>
+                <input type="range" min="1000" max="50000" step="1000" id="tm-slider" oninput="runTM()">
+                <p>Monthly ₹<span id="tm-val">1000</span> = ₹<span id="tm-res">0</span> (10Y)</p>
+            </div>
+        </div>
+
+        <div class="page" id="p4">
+            <div class="glass-card" style="border-top: 4px solid var(--save);">
+                <h3>Survival Runway ✈️</h3>
+                <div class="survival-tag" id="runway-val">0 Days</div>
+                <p style="font-size:0.8rem; text-align:center;" id="runway-txt">Adding data...</p>
+            </div>
+            <button class="btn" style="background:var(--gold); color:black;" onclick="runAudit()">📊 Run Monthly Audit</button>
+        </div>
+    </div>
+
+    <div class="nav-dots">
+        <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+
+    <script>
+        let state = JSON.parse(localStorage.getItem('bg_vFinal')) || { inc: 0, exp: 0, inv: 0, monthly: 0, history: [] };
+        let currentP = 0;
+        let chart;
+
+        // Swipe Logic
+        let startX = 0;
+        document.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+        document.addEventListener('touchend', e => {
+            let endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50 && currentP < 3) move(currentP + 1);
+            if (startX - endX < -50 && currentP > 0) move(currentP - 1);
+        });
+
+        function move(p) {
+            currentP = p;
+            document.getElementById('main-wrapper').style.transform = `translateX(-${p * 100}vw)`;
+            let dots = document.querySelectorAll('.dot');
+            dots.forEach((d, i) => d.className = i === p ? 'dot active' : 'dot');
+            if(p === 1) initChart(); // Load chart on expense page
+        }
+
+        function toggleAI() {
+            let m = document.getElementById('ai-modal');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function add(type) {
+            let val = parseInt(document.getElementById(type.substring(0,3)+'-amt').value);
+            if(!val) return;
+            if(type === 'income') { state.inc += val; state.monthly = val; }
+            else if(type === 'expense') state.exp += val;
+            else if(type === 'invest') state.inv += val;
+            state.history.push({type, val, date: new Date()});
+            save();
+        }
+
+        function save() {
+            localStorage.setItem('bg_vFinal', JSON.stringify(state));
+            render();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            if(chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Exp', 'Inv', 'Save'],
+                    datasets: [{
+                        data: [state.exp, state.inv, (state.inc - state.exp - state.inv)],
+                        backgroundColor: ['#f43f5e', '#3b82f6', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '80%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        function render() {
+            document.getElementById('disp-inc').innerText = `₹${state.inc.toLocaleString()}`;
+            document.getElementById('disp-exp').innerText = `₹${state.exp.toLocaleString()}`;
+            document.getElementById('disp-inv').innerText = `₹${state.inv.toLocaleString()}`;
+            
+            // Splitter
+            let m = state.monthly || 1;
+            document.getElementById('s-needs').innerText = `₹${(m*0.5).toLocaleString()}`;
+            document.getElementById('s-wants').innerText = `₹${(m*0.3).toLocaleString()}`;
+            document.getElementById('s-invest').innerText = `₹${(m*0.2).toLocaleString()}`;
+
+            // Clock & Runway
+            document.getElementById('m-clock').innerText = `${((1000000 - state.inv)/(m*0.2*12 || 1)).toFixed(1)} Years`;
+            let r = Math.floor((state.inc - state.exp - state.inv) / (state.exp/30 || 1));
+            document.getElementById('runway-val').innerText = r > 0 ? r + " Days" : "0 Days";
+            
+            runTM();
+        }
+
+        function runTM() {
+            let v = document.getElementById('tm-slider').value;
+            document.getElementById('tm-val').innerText = v;
+            let res = v * ((Math.pow(1 + 0.01, 120) - 1) / 0.01) * 1.01;
+            document.getElementById('tm-res').innerText = Math.round(res).toLocaleString();
+        }
+
+        function runAudit() {
+            alert(`Audit Result: 
+            Current Savings: ₹${state.inc - state.exp - state.inv}
+            Verdict: ${state.exp > state.inc * 0.7 ? "Bhai kharche kam kar!" : "Shabash, sahi ja raha hai!"}`);
+        }
+
+        function askAI() {
+            let q = document.getElementById('chat-input').value.toLowerCase();
+            let w = document.getElementById('chat-window');
+            if(q.includes('car')) w.innerHTML += `<p>Bhai: Agle saal car chahiye toh ₹40k sip start kar!</p>`;
+            else w.innerHTML += `<p>Bhai: Budget Guru ki suno, savings badhao!</p>`;
+        }
+
+        render();
+    </script>
+</body>
+</html>
